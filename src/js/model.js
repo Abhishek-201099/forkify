@@ -1,12 +1,23 @@
+import { API_URL, TIMEOUT_SEC } from './config';
+
 export const state = {
   recipe: {},
 };
 
+const timeout = function (s) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error(`Request took too long! Timeout after ${s} second`));
+    }, s * 1000);
+  });
+};
+
 export async function loadRecipe(id) {
   try {
-    const res = await fetch(
-      `https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
-    );
+    const res = await Promise.race([
+      fetch(`${API_URL}/${id}`),
+      timeout(TIMEOUT_SEC),
+    ]);
     const data = await res.json();
     if (!res.ok) throw new Error(`${data.message} ${res.status}`);
     const { recipe } = data.data;
@@ -22,6 +33,6 @@ export async function loadRecipe(id) {
     };
     console.log('Recipe loaded : ', state.recipe);
   } catch (error) {
-    alert('recipe load :', error);
+    throw error;
   }
 }
