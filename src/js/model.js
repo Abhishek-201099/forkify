@@ -2,6 +2,10 @@ import { API_URL, TIMEOUT_SEC } from './config';
 
 export const state = {
   recipe: {},
+  search: {
+    query: '',
+    results: [],
+  },
 };
 
 const timeout = function (s) {
@@ -15,7 +19,7 @@ const timeout = function (s) {
 export async function loadRecipe(id) {
   try {
     const res = await Promise.race([
-      fetch(`${API_URL}/${id}`),
+      fetch(`${API_URL}${id}`),
       timeout(TIMEOUT_SEC),
     ]);
     const data = await res.json();
@@ -31,7 +35,29 @@ export async function loadRecipe(id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
-    console.log('Recipe loaded : ', state.recipe);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function loadSearchResults(query) {
+  try {
+    state.search.query = query;
+    const res = await Promise.race([
+      fetch(`${API_URL}?search=${query}`),
+      timeout(TIMEOUT_SEC),
+    ]);
+    const data = await res.json();
+    if (!res.ok) throw new Error(`${data.message}${res.status}`);
+    const { recipes } = data.data;
+    state.search.results = recipes.map(recipe => {
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        image: recipe.image_url,
+      };
+    });
   } catch (error) {
     throw error;
   }
