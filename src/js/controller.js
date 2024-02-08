@@ -6,14 +6,6 @@ import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
 
-// https://forkify-api.herokuapp.com/v2
-
-// if (module.hot) {
-//   module.hot.accept();
-// }
-
-///////////////////////////////////////
-
 async function controlRecipes() {
   try {
     const id = window.location.hash.slice(1);
@@ -22,6 +14,7 @@ async function controlRecipes() {
 
     await model.loadRecipe(id);
     recipeView.render(model.state.recipe);
+    resultsView.render(model.getSearchResultsPage());
   } catch (error) {
     recipeView.renderError();
   }
