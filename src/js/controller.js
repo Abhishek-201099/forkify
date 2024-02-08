@@ -5,16 +5,17 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
+import bookmarksView from './views/bookmarksView';
 
 async function controlRecipes() {
   try {
     const id = window.location.hash.slice(1);
     if (!id) return;
     recipeView.spinner();
-
     await model.loadRecipe(id);
     recipeView.render(model.state.recipe);
     resultsView.render(model.getSearchResultsPage());
+    bookmarksView.render(model.state.bookmarks);
   } catch (error) {
     recipeView.renderError();
   }
@@ -43,11 +44,27 @@ function controlServings(newServings) {
   recipeView.render(model.state.recipe);
 }
 
+function controlAddBookmark() {
+  if (!model.state.recipe.bookmarked) {
+    model.addBookmark(model.state.recipe);
+  } else {
+    model.deleteBookmark(model.state.recipe.id);
+  }
+  recipeView.render(model.state.recipe);
+  bookmarksView.render(model.state.bookmarks);
+}
+
+function controlBookmarkView() {
+  bookmarksView.render(model.state.bookmarks);
+}
+
 function init() {
+  bookmarksView.addHandlerRender(controlBookmarkView);
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
+  recipeView.addHandlerAddBookmark(controlAddBookmark);
 }
 
 init();
