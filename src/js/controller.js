@@ -6,6 +6,8 @@ import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
 import bookmarksView from './views/bookmarksView';
+import addRecipeView from './views/addRecipeView';
+import { MODEL_CLOSE_SEC } from './config';
 
 async function controlRecipes() {
   try {
@@ -58,6 +60,21 @@ function controlBookmarkView() {
   bookmarksView.render(model.state.bookmarks);
 }
 
+async function controlDataUpload(newRecipe) {
+  try {
+    addRecipeView.spinner();
+    await model.uploadRecipe(newRecipe);
+    recipeView.render(model.state.recipe);
+    bookmarksView.render(model.state.bookmarks);
+    addRecipeView.renderMessage();
+    setTimeout(function () {
+      addRecipeView.toggleWindow();
+    }, MODEL_CLOSE_SEC * 1000);
+  } catch (error) {
+    addRecipeView.renderError(error.message);
+  }
+}
+
 function init() {
   bookmarksView.addHandlerRender(controlBookmarkView);
   recipeView.addHandlerRender(controlRecipes);
@@ -65,6 +82,7 @@ function init() {
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
   recipeView.addHandlerAddBookmark(controlAddBookmark);
+  addRecipeView.addHandlerUpload(controlDataUpload);
 }
 
 init();
