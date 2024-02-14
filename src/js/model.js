@@ -37,7 +37,7 @@ function createRecipeData(data) {
 export async function loadRecipe(id) {
   try {
     const res = await Promise.race([
-      fetch(`${API_URL}${id}`),
+      fetch(`${API_URL}${id}?key=${KEY}`),
       timeout(TIMEOUT_SEC),
     ]);
     const data = await res.json();
@@ -58,7 +58,7 @@ export async function loadSearchResults(query) {
   try {
     state.search.query = query;
     const res = await Promise.race([
-      fetch(`${API_URL}?search=${query}`),
+      fetch(`${API_URL}?search=${query}&key=${KEY}`),
       timeout(TIMEOUT_SEC),
     ]);
     const data = await res.json();
@@ -70,6 +70,7 @@ export async function loadSearchResults(query) {
         title: recipe.title,
         publisher: recipe.publisher,
         image: recipe.image_url,
+        ...(recipe.key && { key: recipe.key }),
       };
     });
     state.search.page = 1;
@@ -116,7 +117,7 @@ export async function uploadRecipe(newRecipe) {
     const ingredients = Object.entries(newRecipe)
       .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
       .map(ingredient => {
-        const ingArr = ingredient[1].replaceAll(' ', '').split(',');
+        const ingArr = ingredient[1].split(',').map(el => el.trim());
         if (ingArr.length !== 3)
           throw new Error(
             'Ingredients entered in wrong format, please enter in the correct format :)'
